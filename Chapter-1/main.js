@@ -1,13 +1,19 @@
+var camera,
+    scene,
+    render;
+
 function init() {
 
+  let stats = initStats();
+
   // 创建一个场景，场景包含摄像机、光照、物体等元素
-  let scene = new THREE.Scene();
+  scene = new THREE.Scene();
 
   // 创建一个相机
-  let camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+  camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
 
   // 创建渲染器对象
-  let renderer = new THREE.WebGLRenderer();
+  renderer = new THREE.WebGLRenderer();
   // renderer.setClearColorHex();
   renderer.setClearColor(new THREE.Color(0xeeeeee));
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -15,7 +21,7 @@ function init() {
 
   // 创建坐标轴
   let axes = new THREE.AxisHelper(20);
-  // scene.add(axes);
+  scene.add(axes);
 
   // 设置平面大小
   let planeGeometry = new THREE.PlaneGeometry(60, 20);
@@ -84,15 +90,28 @@ function init() {
 
   let step = 0;
 
-  let renderScene = function() {
+  let controls = {
+    rotationSpeed: 0.02,
+    bouncingSpeed: 0.03
+  }
+
+  let gui = new dat.GUI();
+  gui.add(controls, 'rotationSpeed', 0, 1);
+  gui.add(controls, 'bouncingSpeed', 0, 1);
+
+  renderScene();
+
+  function renderScene() {
+
+    stats.update();
 
     // 让正方体旋转
-    cube.rotation.x += 0.02;
-    cube.rotation.y += 0.02;
-    cube.rotation.z += 0.02;
+    cube.rotation.x += controls.rotationSpeed;
+    cube.rotation.y += controls.rotationSpeed;
+    cube.rotation.z += controls.rotationSpeed;
 
     // 使球体弹跳
-    step += 0.04;
+    step += controls.bouncingSpeed;
     sphere.position.x = 20 + (10 * Math.cos(step));
     sphere.position.y = 2 + (10 * Math.abs(Math.sin(step)));
 
@@ -100,7 +119,31 @@ function init() {
     renderer.render(scene, camera);
   }
 
-  renderScene();
+  function initStats() {
+    let stats = new Stats();
+
+    // 0: fps, 1: ms
+    stats.setMode(0);
+
+    stats.domElement.style.position = 'absolute';
+    stats.domElement.style.left = '0px';
+    stats.domElement.style.top = '0px';
+    document.getElementById('Stats-output').appendChild(stats.domElement);
+
+    return stats;
+  }
+}
+
+function onResize() {
+
+  // 更新摄像机的aspect属性
+  // 该属性代表屏幕长宽比
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+
+  // 改变渲染器尺寸
+  renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
 window.onload = init;
+window.addEventListener('resize', onResize, false);
