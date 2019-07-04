@@ -1,6 +1,6 @@
 var camera,
     scene,
-    render;
+    renderer;
 
 function init() {
 
